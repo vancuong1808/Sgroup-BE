@@ -1,32 +1,42 @@
 import express from 'express';
 import data from './db.json' with { type: "json" };
+import fs from 'fs';
 const app = express();
 const PORT = 3000;
 
 app.use( express.json() )
 
+let ID;
 
-
-var cnt = 0;
+if( data.User.length == 0 ) {
+    ID = 0;
+} else {
+    ID = JSON.parse( data.User[data.User.length - 1].id );
+}
 
 app.post('/api/users/', function( req, res ) {
-    const user = req.body;
-    const newData = { id: ++cnt, name: user.name, description:user.description }
+    const { name, description } = req.body;
+    const newData = { id: ++ID, name: name, description: description }
     data.User.push( newData )
-    res.send( newData )
+    fs.writeFile( 'db.json', JSON.stringify( data, null, 2 ), 'utf8', ( err ) => {
+        if( err ) {
+            res.send("ERROR WRITE FILE!");
+        } else {
+            res.send( newData );
+        }
+    } )
 });
 
 app.get('/api/users/:id', function( req, res ) {
-    const _id = req.params.id;
+    const { id } = req.params;
     const index = data.User.findIndex( function( items, index ) {
-        return items.id == _id;
+        return items.id === parseInt( id );
     } );
     if( index != - 1 ) {
         res.send( data.User[index] )
     } else {
-        res.send( "NOT FOUND :" + index );
+        res.send( "NOT FOUND INDEX:" + index );
     }
-    //alo
 });
 
 app.get('/api/users/', function( req, res ) {
@@ -34,32 +44,47 @@ app.get('/api/users/', function( req, res ) {
 });
 
 app.put('/api/users/:id', function( req, res ) {
-    const _id = req.params.id;
+    const { id } = req.params;
     const { name, description } = req.body;
     const index = data.User.findIndex( function( items, index ) {
-        return items.id == _id;
+        return items.id === parseInt( id );
     } );
     if( index != - 1 ) {
         data.User[index].name = name;
         data.User[index].description = description;
-        res.send("success!")
+        fs.writeFile( './db.json', JSON.stringify( data, null, 2 ), 'utf8', ( err ) => {
+            if( err ) {
+                res.send("ERROR WRITE FILE!");
+            } else {
+                res.send( "Data Updated!" )
+            }
+        } )
     } else {
-        res.send( "NOT FOUND :" + index );
+        res.send( "NOT FOUND INDEX:" + index );
     }
 })
 
 app.delete('/api/users/:id', function( req, res ) {
-    const _id = req.params.id;
+    const { id } = req.params;
     const index = data.User.findIndex( function( items, index ) {
-        return items.id == _id
+        return items.id === parseInt( id )
     });
     if( index != - 1 ) {
+        ID = JSON.parse( data.User[data.User.length - 1].id );
         data.User.splice( index, 1 );
-        res.send("success!")
+        fs.writeFile( './db.json', JSON.stringify( data, null, 2 ), 'utf8', ( err ) => {
+            if( err ) {
+                res.send("ERROR WRITE FILE!");
+            } else {
+                res.send("Data Deleted!");
+            }
+        })
     } else {
-        res.send( "NOT FOUND :" + index );
+        res.send( "NOT FOUND INDEX:" );
     }
+
 });
+
 
 app.listen( PORT, function( req, res ) {
     console.log('Example app listening on port 3000!');
