@@ -9,14 +9,19 @@ app.use( express.json() )
 
 function ValidateData( req, res, next ) {
     const{ id, name, description } = req.body
-    if( !id || id <=0) {
-        res.send("ERROR ID");
+    if( id != null ) {
+        if( !id || id <= 0 ) {
+           res.send("ERROR ID");
+           return;
+        }
     }
     if( !name ) {
-        res.send("ERROR NAME")
+        res.send("ERROR NAME");
+        return;
     }
     if( !description ) {
-        res.send("ERROR DESCRIPTION")
+        res.send("ERROR DESCRIPTION");
+        return; 
     }
     next();
 }
@@ -59,7 +64,7 @@ app.get('/api/users/', function( req, res ) {
 });
 
 app.put('/api/users/:id', ValidateData, function( req, res ) {
-    const { id } = parseInt( req.params );
+    const { id } = req.params;
     const { name, description } = req.body;
     const index = data.User.findIndex( function( items, index ) {
         return items.id === parseInt( id );
