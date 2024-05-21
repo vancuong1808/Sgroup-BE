@@ -6,6 +6,21 @@ const PORT = 3000;
 
 app.use( express.json() )
 
+
+function ValidateData( req, res, next ) {
+    const{ id, name, description } = req.body
+    if( !id || id <=0) {
+        res.send("ERROR ID");
+    }
+    if( !name ) {
+        res.send("ERROR NAME")
+    }
+    if( !description ) {
+        res.send("ERROR DESCRIPTION")
+    }
+    next();
+}
+
 let ID;
 
 if( data.User.length == 0 ) {
@@ -14,7 +29,7 @@ if( data.User.length == 0 ) {
     ID = JSON.parse( data.User[data.User.length - 1].id );
 }
 
-app.post('/api/users/', function( req, res ) {
+app.post('/api/users/', ValidateData, function( req, res ) {
     const { name, description } = req.body;
     const newData = { id: ++ID, name: name, description: description }
     data.User.push( newData )
@@ -43,8 +58,8 @@ app.get('/api/users/', function( req, res ) {
     res.send( data.User );
 });
 
-app.put('/api/users/:id', function( req, res ) {
-    const { id } = req.params;
+app.put('/api/users/:id', ValidateData, function( req, res ) {
+    const { id } = parseInt( req.params );
     const { name, description } = req.body;
     const index = data.User.findIndex( function( items, index ) {
         return items.id === parseInt( id );
