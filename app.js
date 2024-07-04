@@ -1,12 +1,30 @@
 import express from 'express';
-import users from "./routes/users.js"
+import SuserRoute from "./src/routes/user.route.js";
+import AuthSuserRoute from "./src/routes/auth.route.js"
+import dotenv from 'dotenv'
+dotenv.config();
 const app = express();
-const PORT = 3000;
+
+
+// const excute = async() => {
+//     const users = await UserService.getAllUsers();
+//     console.log( users );
+//     const UserName = "Doe";
+//     const Password = "123";
+//     const login = await LoginService.Login( UserName, Password );
+//     console.log( login );
+// }
+
+
+
 
 app.use( express.json() )
-app.use("/api/users", users);
+app.use("/user", SuserRoute );
+app.use("/auth", AuthSuserRoute );
 
 
-app.listen( PORT, function( req, res ) {
+app.listen( process.env.PORT || 3000 , function( req, res ) {
     console.log('Example app listening on port 3000!');
 })
+
+// excute();
