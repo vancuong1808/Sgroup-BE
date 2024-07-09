@@ -1,6 +1,6 @@
-import authService from '../services/auth.service.js';
 import AuthService from '../services/auth.service.js'
-import SuserService from '../services/user.service.js';
+import SuserService from '../services/user.service.js'
+import Utils from '../Utils/auth.utils.js'
 
 const RegisterUser = async( req, res ) => {
     try {
@@ -78,11 +78,19 @@ const ResetPassword = async( req, res ) => {
             newpassword: req.body.newpassword,
             otp: req.body.otp
         };
-        const SetNewPassword = await authService.SetNewPassword( NewPassword );
+        const SetNewPassword = await AuthService.SetNewPassword( NewPassword );
         res.status( 200 ).json( SetNewPassword );
     } catch (error) {
         res.status( 400 ).json( error )
     }
+}
+
+const UploadSingle = ( req, res ) => {
+    AuthService.UploadSingle( req, res )
+}
+
+const UploadMulti = ( req, res ) => {
+    AuthService.UploadMulti( req, res )
 }
 
 export default { 
@@ -91,5 +99,7 @@ export default {
     LoginADMIN,
     GetAllUsers,
     ForgotPassword,
-    ResetPassword
+    ResetPassword,
+    UploadSingle,
+    UploadMulti
 }

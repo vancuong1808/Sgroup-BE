@@ -3,8 +3,10 @@ import SuserService from './user.service.js'
 import Utils from '../Utils/auth.utils.js'
 import jwt from 'jsonwebtoken'
 import nodemailer from 'nodemailer'
+import multer from 'multer'
 import dotenv from 'dotenv'
 dotenv.config()
+
 const RegisterUser = async( registerBody ) => {
     try {
         const hashedPassword = await Utils.HashedPassword( registerBody.password );
@@ -23,8 +25,8 @@ const RegisterUser = async( registerBody ) => {
 
 const LoginUser = async( loginBody ) => {
     try {
-        const hash = await database.query( 'SELECT password FROM users WHERE username = ?', [loginBody.username] );
-        console.log( hash[0][0].password );
+        const hash = await database.query( 'SELECT id, password FROM users WHERE username = ?', [loginBody.username] );
+        console.log( hash[0][0] );
         if( hash.length === 0 ) {
             console.log( hash[0][0].password );
             return { message : "ERROR HASHING" };
@@ -32,7 +34,8 @@ const LoginUser = async( loginBody ) => {
         const CheckedPassword = await Utils.ComparePassword( loginBody.password, hash[0][0].password );
         console.log( CheckedPassword )
         if ( CheckedPassword ) {
-            return { message : "LOGIN SUCCESS" };
+            const token = jwt.sign( { username: `${hash[0][0].id}` }, process.env.SECRET_KEY );
+            return { message : "LOGIN SUCCESS", token };
         }
         else {
             return { message : "LOGIN FAIL" };
@@ -90,7 +93,7 @@ const SendMail = async( Email ) => {
     
     } catch (error) {
         console.log( error )
-        return { message : "ERROR GET OTP" };
+        return { message : "ERROR SEND MAIL" };
     }
 
 }
@@ -117,10 +120,39 @@ const SetNewPassword = async( NewPassword ) => {
     }
 }
 
+const UploadSingle = ( req, res ) => {
+    const upload = multer({ storage: Utils.FileConfigs().storage, fileFilter: Utils.FileConfigs().fileFilter }).single('file')
+    upload( req, res, (error) => {
+        if( error ) {
+            return res.status( 400 ).json( error );
+        }
+        const file = req.file;
+        if( !file ) {
+            return res.status( 400 ).send( "NO FILE" );
+        }
+        return res.status( 200 ).send("Upload successful")
+    })
+}
+
+const UploadMulti = ( req, res ) => {
+    const upload = multer({ storage: Utils.FileConfigs().storage, fileFilter: Utils.FileConfigs().fileFilter } ).array('file', 10)
+    upload( req, res, (error) => {
+        if( error ) {
+            return res.status( 400 ).json( error );
+        }
+        const files = req.files;
+        if( !files ) {
+            return res.status( 400 ).send( "NO FILE" );
+        }
+        return res.status( 200 ).send("Upload successful")
+    })
+}
 export default {
     RegisterUser,
     LoginUser,
     LoginADMIN,
     SendMail,
-    SetNewPassword
+    SetNewPassword,
+    UploadSingle,
+    UploadMulti
 }

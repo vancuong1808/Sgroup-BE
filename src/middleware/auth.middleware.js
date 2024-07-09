@@ -14,7 +14,7 @@ const ValidateToken = async( req, res, next ) => {
         }
         next();
     } catch( error ) {
-        res.status( 400 ).send("ERROR VALIDATE ", error)
+        res.status( 400 ).send("ERROR VALIDATE ", error )
     }
 }
 
@@ -37,6 +37,7 @@ const ValidateForgotPassword = async( req, res, next ) => {
         return res.status( 400 ).json({ message : "ERROR VALIDATE", error })
     }
 }
+
 
 export default {
     ValidateToken,

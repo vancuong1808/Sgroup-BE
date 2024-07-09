@@ -12,8 +12,12 @@ router.post('/ADMIN', AuthController.LoginADMIN);
 
 router.get('/getAllUsers', AuthMiddleware.ValidateToken, AuthController.GetAllUsers );
 
-router.post('/forgot-password', AuthController.ForgotPassword )
+router.post('/forgot-password', AuthController.ForgotPassword );
 
-router.put('/reset-password', AuthMiddleware.ValidateForgotPassword, AuthController.ResetPassword )
+router.put('/reset-password', AuthMiddleware.ValidateForgotPassword, AuthController.ResetPassword );
+
+router.post('/photo/upload', AuthMiddleware.ValidateToken, AuthController.UploadSingle );
+
+router.post('/photos/upload', AuthMiddleware.ValidateToken, AuthController.UploadMulti );
 
 export default router
