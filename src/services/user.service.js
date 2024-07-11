@@ -3,7 +3,7 @@ import database from "../config/database.js";
 const getAllSusers = async() => {
     try {
         const AllSusers = await database.query("SELECT id, username, email, fullName FROM users ");
-        if( AllSusers.length === 0 ) {
+        if( AllSusers[0].length === 0 ) {
             console.log( AllSusers );
             return { message : "ERROR ID" };
         } 
@@ -22,7 +22,7 @@ const getSuserByID = async( id ) => {
             return { message : "ERROR ID" };
         }
         const Suser = await database.query(`SELECT id, username, email, fullName FROM users WHERE id = ?`, [ id ]);
-        if( Suser.length === 0 ) {
+        if( Suser[0].length === 0 ) {
             console.log( Suser );
             return { message : "GET USER BY ID FAIL" };
         } 
@@ -38,10 +38,11 @@ const createSuser = async( User ) => {
     try {
         const Suser = await database.query('INSERT INTO users( username, email, password, fullName ) VALUES( ?, ?, ?, ? )', [ User.username, User.email, User.password, User.fullName ] );
         console.log( Suser )
-        if( Suser.length === 0 ) {
+        if( Suser[0].length === 0 ) {
             console.log( Suser );
             return { message : "CREATE USER FAIL" };
         } 
+        console.log( Suser[0] );
         return Suser[0].insertId;
     }
     catch( error ) {
@@ -58,7 +59,7 @@ const updateSuser = async( id, User ) => {
         }
         const Suser = await database.query('UPDATE users SET username = ?, email = ?, fullName = ? WHERE id = ?', [ User.username, User.email, User.fullName, id ]);
         console.log( Suser )
-        if( Suser.length === 0 ) {
+        if( Suser[0].length === 0 ) {
             console.log( Suser );
             return { message : "UPDATE USER FAIL" };;
         } 
@@ -77,7 +78,7 @@ const deleteSuser = async( id ) => {
             return { message : "ERROR ID" };
         }
         const Suser = await database.query(`DELETE FROM users WHERE id = ? `, [ id ] );
-        if( Suser.length === 0 ) {
+        if( Suser[0].length === 0 ) {
             console.log( Suser );
             return { message : "DELETE FAIL" };
         } 
@@ -92,7 +93,7 @@ const deleteSuser = async( id ) => {
 const setUserOTP = async( setOTP ) => {
     try {
         const SuserOTP = await database.query(`INSERT INTO OTP( email, OTP, expire ) VALUES( ?, ?, ? )`, [ setOTP.email, setOTP.OTP, setOTP.expireTime ]);
-        if( SuserOTP.length === 0 ) {
+        if( SuserOTP[0].length === 0 ) {
                 console.log( SuserOTP );
                 return false;
             } 
@@ -106,7 +107,7 @@ const setUserOTP = async( setOTP ) => {
 const CheckMailOTP = async( Email ) => {
     try { 
         const UserMail = await database.query( `SELECT * FROM OTP WHERE email = ?`, [ Email ]); 
-        if( UserMail.length === 0 ) {
+        if( UserMail[0].length === 0 ) {
             console.log( UserMail );
             return false;
         }
@@ -120,7 +121,7 @@ const CheckMailOTP = async( Email ) => {
 const CheckMailUser = async( Email ) => {
     try { 
         const UserMail = await database.query( `SELECT * FROM users WHERE email = ?`, [ Email ]); 
-        if( UserMail.length === 0 ) {
+        if( UserMail[0].length === 0 ) {
             console.log( UserMail );
             return false;
         }
@@ -136,7 +137,7 @@ const CheckOTP = async( NewPassword ) => {
         const time = new Date();
         const now = time.setMinutes( time.getMinutes() );
         const OTP = await database.query(`SELECT expire, otp FROM OTP WHERE email = ?`, [ NewPassword.email ]);
-        if( OTP.length === 0 ) {
+        if( OTP[0].length === 0 ) {
             console.log( expireTime, OTP );
             return false;
         }
@@ -156,7 +157,7 @@ const CheckOTP = async( NewPassword ) => {
 const updateUserOTP = async( setOTP ) => {
     try {
         const SuserOTP = await database.query(`UPDATE OTP SET otp = ?, expire = ? WHERE email = ?`, [ setOTP.otp, setOTP.expireTime, setOTP.email ]);
-        if( SuserOTP.length === 0 ) {
+        if( SuserOTP[0].length === 0 ) {
             console.log( SuserOTP );
             return false;
         } 
@@ -171,7 +172,7 @@ const saveUserOTP = async( setOTP ) => {
     console.log( setOTP )
     try {
         const IsExistEmail = await database.query( `SELECT * FROM OTP WHERE email = ?`, [ setOTP.email ]); 
-        if( IsExistEmail.length === 0 ) {
+        if( IsExistEmail[0].length === 0 ) {
             console.log( IsExistEmail )
             const saveOTP = await setUserOTP( setOTP );
             if( saveOTP ) {

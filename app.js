@@ -1,6 +1,7 @@
 import express from 'express';
 import SuserRoute from "./src/routes/user.route.js";
 import AuthSuserRoute from "./src/routes/auth.route.js"
+import ApiVoteRoute from "./src/routes/vote.route.js"
 import dotenv from 'dotenv'
 dotenv.config();
 const app = express();
@@ -21,6 +22,7 @@ const app = express();
 app.use( express.json() )
 app.use("/user", SuserRoute );
 app.use("/auth", AuthSuserRoute );
+app.use("/api", ApiVoteRoute )
 
 
 app.listen( process.env.PORT || 3000 , function( req, res ) {

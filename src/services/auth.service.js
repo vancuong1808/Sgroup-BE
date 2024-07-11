@@ -10,8 +10,8 @@ dotenv.config()
 const RegisterUser = async( registerBody ) => {
     try {
         const hashedPassword = await Utils.HashedPassword( registerBody.password );
-        const User = await database.query( 'INSERT INTO users( email, username, password ) VALUES ( ?, ?, ? )', [ registerBody.email ,registerBody.username, hashedPassword ] );   
-        if( User.length === 0 ) {
+        const User = await database.query( 'INSERT INTO users( email, fullName, username, password ) VALUES ( ?,?, ?, ? )', [ registerBody.email, registerBody.fullName ,registerBody.username, hashedPassword ] );   
+        if( User[0].length === 0 ) {
             console.log( User );
             return { message : "REGISTER FAIL" };
         }
@@ -27,7 +27,7 @@ const LoginUser = async( loginBody ) => {
     try {
         const hash = await database.query( 'SELECT id, password FROM users WHERE username = ?', [loginBody.username] );
         console.log( hash[0][0] );
-        if( hash.length === 0 ) {
+        if( hash[0].length === 0 ) {
             console.log( hash[0][0].password );
             return { message : "ERROR HASHING" };
         }
@@ -110,7 +110,7 @@ const SetNewPassword = async( NewPassword ) => {
         }
         const hashedPassword = await Utils.HashedPassword( NewPassword.newpassword );
         const User = database.query(`UPDATE users SET password = ? WHERE email = ?`, [ hashedPassword, NewPassword.email ]);
-        if( User.length === 0 ) {
+        if( User[0].length === 0 ) {
             console.log( User );
             return { message : "SET NEW PASSWORD FAIL" };
         }

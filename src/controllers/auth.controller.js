@@ -6,6 +6,7 @@ const RegisterUser = async( req, res ) => {
     try {
         const registerBody = {
             email : req.body.email,
+            fullName : req.body.fullName,
             username: req.body.username,
             password : req.body.password,
         } 
@@ -33,9 +34,10 @@ const LoginUser = async( req, res ) => {
 const LoginADMIN = async( req, res ) => {
     const ADMIN = {
         username: req.body.username,
-        password: req.body.password
+        password: req.body.password,
     }
     const token = await AuthService.LoginADMIN( ADMIN );
+    console.log( ADMINACCOUNT );
     if( token ){
         res.send( token );
     }

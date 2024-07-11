@@ -39,10 +39,17 @@ const FileConfigs = () => {
 }
 }
 
+const GetCurrentDate = () => {
+    const now = Date.now();
+    const currentDate = new Date( now );
+    return currentDate.toDateString();
+}
+
 
 export default {
     HashedPassword,
     ComparePassword,
     RandomOTP,
-    FileConfigs
+    FileConfigs,
+    GetCurrentDate
 }

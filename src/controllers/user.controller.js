@@ -65,6 +65,8 @@ const deleteSuser = async( req, res ) => {
     }
 }
 
+
+
 export default {
     getAllSusers,
     getSuserByID,
