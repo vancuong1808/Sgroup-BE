@@ -6,7 +6,7 @@ const CreatePolls = async( req, res ) => {
         const now = AuthUtils.GetCurrentDate();
         console.log( now )
         const PollsBody = {
-            userid: req.body.userid,
+            userid: parseInt( req.user.userid ),
             title: req.body.title,
             isLock: false,
             createdAt: `${now}`
@@ -23,7 +23,7 @@ const LockPoll = async( req, res ) => {
     try {
         const PollID = req.params.id;
         const User = {
-            userid: req.body.userid
+            userid: parseInt( req.user.userid )
         }
         const LockPoll = await VoteService.LockPoll( PollID, User.userid );
         res.status( 200 ).json( LockPoll );
@@ -36,7 +36,7 @@ const UnLockPoll = async( req, res ) => {
     try {
         const PollID = req.params.id;
         const User = {
-            userid: req.body.userid
+            userid: parseInt( req.user.userid )
         }
         const UnLockPoll = await VoteService.UnLockPoll( PollID, User.userid );
         res.status( 200 ).json( UnLockPoll );
@@ -48,7 +48,8 @@ const UnLockPoll = async( req, res ) => {
 const DeletePoll = async( req, res ) => {
     try {
         const PollID = req.params.id;
-        const DeletePoll = await VoteService.DeletePoll( PollID );
+        const UserID = parseInt( req.user.userid );
+        const DeletePoll = await VoteService.DeletePoll( PollID, UserID );
         res.status( 200 ).json( DeletePoll );
     } catch( error ) {
         res.status( 400 ).json( error )
@@ -84,7 +85,7 @@ const RemoveOption = async( req, res ) => {
 const Vote = async( req, res ) => {
     try {
         const VoteBody = {
-            userid: req.body.userid,
+            userid: parseInt( req.user.userid ),
             optionid : req.body.optionid
         }
         const Vote = await VoteService.Vote( VoteBody );
@@ -97,7 +98,7 @@ const Vote = async( req, res ) => {
 const UnVote = async( req, res ) => {
     try {
         const UnVoteBody = {
-            userid: req.body.userid,
+            userid: parseInt( req.user.userid ),
             optionid : req.body.optionid
         }
         const UnVote = await VoteService.UnVote( UnVoteBody );

@@ -34,7 +34,7 @@ const LoginUser = async( loginBody ) => {
         const CheckedPassword = await Utils.ComparePassword( loginBody.password, hash[0][0].password );
         console.log( CheckedPassword )
         if ( CheckedPassword ) {
-            const token = jwt.sign( { username: `${hash[0][0].id}` }, process.env.SECRET_KEY );
+            const token = jwt.sign( { userid: `${hash[0][0].id}` }, process.env.SECRET_KEY );
             return { message : "LOGIN SUCCESS", token };
         }
         else {
@@ -51,7 +51,7 @@ const LoginADMIN = async( ADMIN ) => {
         res.status( 401 ).json( "WRONG ADMIN" );
         return { message: "WRONG ADMIN" };
     }
-    const token = jwt.sign( { username: "ADMIN" }, process.env.SECRET_KEY );
+    const token = jwt.sign( { username: "ADMIN", userid: 0 }, process.env.SECRET_KEY );
     return token;
 }
 

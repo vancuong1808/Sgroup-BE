@@ -5,16 +5,22 @@ dotenv.config()
 
 const ValidateToken = async( req, res, next ) => {
     try {
-        const token = req.headers?.token
+        const token = req.headers?.token;
         console.log( token )
         if( token == null ) {
-            res.status( 401 ).send( "NO AUTHENTICATION ");
-        } else if (  !jwt.verify( token, process.env.SECRET_KEY ) ) {
-            res.status( 401 ).send( "WRONG TOKEN" );
-        }
-        next();
+            return res.status( 400 ).send( "NO AUTHENTICATION ");
+        } 
+        jwt.verify( token, process.env.SECRET_KEY, ( error, decoded ) => {
+            if( error ) {
+                console.log( error )
+                return res.status( 400 ).send( "ERROR TOKEN");
+            }
+            req.user = decoded;
+            next();
+        });
     } catch( error ) {
-        res.status( 400 ).send("ERROR VALIDATE ", error )
+        console.log( error )
+        return res.status( 400 ).send("ERROR VALIDATE " );
     }
 }
 
@@ -34,7 +40,8 @@ const ValidateForgotPassword = async( req, res, next ) => {
         }
         next();
     } catch (error) {
-        return res.status( 400 ).json({ message : "ERROR VALIDATE", error })
+        console.log( error )
+        return res.status( 400 ).json({ message : "ERROR VALIDATE"})
     }
 }
 
