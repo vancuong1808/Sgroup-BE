@@ -3,6 +3,9 @@ import database from "../config/database.js";
 
 const CreatePolls = async( PollsBody ) => {
     try {
+    if( !PollsBody.title || PollsBody.title == " "  ) {
+        return { message: "TITLE IS NULL", status: false };
+    }
     const isExistUser = await database.query(`SELECT * FROM users WHERE id = ?`, [PollsBody.userid]);
     if( isExistUser[0].length === 0 ) {
         console.log( " not exist userid", isExistUser );

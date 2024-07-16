@@ -1,7 +1,7 @@
 import express from 'express';
-import SuserRoute from "./src/routes/user.route.js";
-import AuthSuserRoute from "./src/routes/auth.route.js"
-import ApiVoteRoute from "./src/routes/vote.route.js"
+import SuserRoute from "./src/routes/user.routes.js";
+import AuthSuserRoute from "./src/routes/auth.routes.js"
+import ApiVoteRoute from "./src/routes/vote.routes.js"
 import dotenv from 'dotenv'
 dotenv.config();
 const app = express();
