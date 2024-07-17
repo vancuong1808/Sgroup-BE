@@ -5,6 +5,16 @@ dotenv.config()
 
 const ValidateToken = async( req, res, next ) => {
     try {
+        // 
+        // Lấy token từ header Authorization
+        // const authHeader = req.headers.authorization;
+        // // Kiểm tra xem authHeader có tồn tại và bắt đầu bằng "Bearer "
+        // if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        //     return res.status(401).send("NO AUTHENTICATION");
+        // }
+        // // Tách Bearer và token
+        // const token = authHeader.split(' ')[1];
+        // // Xác thực token
         const token = req.headers?.token;
         console.log( token )
         if( token == null ) {

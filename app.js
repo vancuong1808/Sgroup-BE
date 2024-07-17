@@ -20,9 +20,9 @@ const app = express();
 
 
 app.use( express.json() )
-app.use("/user", SuserRoute );
-app.use("/auth", AuthSuserRoute );
-app.use("/api", ApiVoteRoute )
+app.use("/api/user", SuserRoute );
+app.use("/api/auth", AuthSuserRoute );
+app.use("/api", ApiVoteRoute );
 
 
 app.listen( process.env.PORT || 3000 , function( req, res ) {
