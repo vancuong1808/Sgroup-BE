@@ -2,33 +2,12 @@
   "User": [
     {
       "id": 1,
-      "name": "Cuong",
-      "description": "con nguoi"
+      "name": "van cuong",
+      "email": "vancuong@gmail.com"
     },
     {
       "id": 2,
-      "name": "Bao",
-      "description": "NGUU"
-    },
-    {
-      "id": 3,
-      "name": "Bao",
-      "description": "NGUU"
-    },
-    {
-      "id": 6,
-      "name": "Bao",
-      "description": "NGUU"
-    },
-    {
-      "id": 8,
-      "name": "Bao",
-      "description": "NGUU"
-    },
-    {
-      "id": 9,
-      "name": "Bao",
-      "description": "NGUU"
+      "name": "bao"
     }
   ]
 }
