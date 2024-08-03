@@ -79,7 +79,7 @@ jobs:
             docker pull ${{ secrets.DOCKER_USERNAME }}/sgroupdevop:latest
             docker rm -f myapp-container || true
             docker run -d \
-            --name myapp-container 
+            --name myapp-container \
             --network cunity-network \
             --env-file .env \
             -p ${{ secrets.PORT }}:${{ secrets.PORT }} \
