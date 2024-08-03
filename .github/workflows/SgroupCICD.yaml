@@ -42,9 +42,8 @@ jobs:
             host: ${{ secrets.EC2_HOST }}
             username: ${{ secrets.EC2_USERNAME }}
             key: ${{ secrets.EC2_SSH_KEY }}
-
-        - name: Check and create new file .env
           script: |
+            # Check and create new file .env
             if [ -f .env ]; then
               echo ".env existed";
               rm .env || true;
@@ -53,9 +52,7 @@ jobs:
             else
               touch .env;
             fi
-
-        - name: Setup file .env
-          script: |
+            # Setup file .env
             echo "PORT=${{ secrets.PORT }}" >> .env
             echo "LOCAL_HOST=${{ secrets.LOCAL_HOST }}" >> .env
             echo "USER=${{ secrets.USER }}" >> .env
@@ -67,9 +64,7 @@ jobs:
             echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> .env
             echo "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" >> .env
             echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> .env
-
-        - name: Pull Docker image and Run
-          script: |
+            # Pull Docker image and Run
             docker pull ${{ secrets.DOCKER_USERNAME }}/sgroupdevop:latest
             docker rm -f myapp-container || true
             docker run -d --name myapp-container --network cunity-network \
