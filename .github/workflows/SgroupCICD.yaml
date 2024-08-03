@@ -11,7 +11,7 @@ on:
 jobs:
   job 1:
       name: Checkout code and build Docker image
-      Checkout_Build: 
+      Checkout-Build: 
       # Xác định Environment Dev chạy job
       runs-on: ubuntu-latest  
       # Các task nhỏ / step thực thi job
@@ -33,7 +33,7 @@ jobs:
   job 2:
       needs: [ job 1 ]
       name: SSH into EC2 instance 
-      SSH_into_EC2:
+      SSH-into-EC2:
       # Xác định Environment Dev chạy job
       runs-on: ubuntu-latest
       # Các task nhỏ / step thực thi job
