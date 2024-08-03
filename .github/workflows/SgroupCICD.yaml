@@ -42,11 +42,7 @@ jobs:
             host: ${{ secrets.EC2_HOST }}
             username: ${{ secrets.EC2_USERNAME }}
             key: ${{ secrets.EC2_SSH_KEY }}
-  job_3: 
-      needs: [ job_1, job_2 ]
-      name: Deploy
-      # Các task nhỏ / step thực thi job
-      steps: 
+
         - name: Check and create new file .env
           script: |
             if [ -f .env ]; then
