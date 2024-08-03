@@ -9,7 +9,7 @@ on:
       - main
 # Chuỗi các task sẽ thực hiện khi lắng nghe các sự kiện
 jobs:
-  job 1:
+  job_1:
       name: Checkout code and build Docker image
       # Xác định Environment Dev chạy job
       runs-on: ubuntu-latest  
@@ -29,8 +29,8 @@ jobs:
           run: |
             docker build -t ${{ secrets.DOCKER_USERNAME }}/sgroupdevop:latest .
             docker push ${{ secrets.DOCKER_USERNAME }}/sgroupdevop:latest
-  job 2:
-      needs: [ job 1 ]
+  job_2:
+      needs: [ job_1 ]
       name: SSH into EC2 instance 
       # Xác định Environment Dev chạy job
       runs-on: ubuntu-latest
@@ -42,8 +42,8 @@ jobs:
             host: ${{ secrets.EC2_HOST }}
             username: ${{ secrets.EC2_USERNAME }}
             key: ${{ secrets.EC2_SSH_KEY }}
-  job 3: 
-      needs: [ job 1, job 2 ]
+  job_3: 
+      needs: [ job_1, job_2 ]
       name: Deploy
       # Xác định Environment Dev chạy job
       runs-on: ubuntu-latest
