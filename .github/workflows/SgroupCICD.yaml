@@ -42,35 +42,35 @@ jobs:
             host: ${{ secrets.EC2_HOST }}
             username: ${{ secrets.EC2_USERNAME }}
             key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            # Check and create new file .env
-            if [ -f .env ]; then
-              echo ".env existed";
-              rm .env || true;
-              echo ".env has been removed";
-              touch .env;
-            else
-              touch .env;
-            fi
-            # Setup file .env
-            echo "PORT=${{ secrets.PORT }}" >> .env
-            echo "LOCAL_HOST=${{ secrets.LOCAL_HOST }}" >> .env
-            echo "USER=${{ secrets.USER }}" >> .env
-            echo "PASSWORD=${{ secrets.PASSWORD }}" >> .env
-            echo "DATABASE=${{ secrets.DATABASE }}" >> .env
-            echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
-            echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
-            echo "SMTP_HOST=${{ secrets.SMTP_HOST }}" >> .env
-            echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> .env
-            echo "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" >> .env
-            echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> .env
-            # Pull Docker image and Run
-            docker pull ${{ secrets.DOCKER_USERNAME }}/sgroupdevop:latest
-            docker rm -f myapp-container || true
-            docker run -d --name myapp-container --network cunity-network \
-            --env-file .env \
-            -p ${{ secrets.PORT }}:${{ secrets.PORT }} \
-            ${{ secrets.DOCKER_USERNAME }}/sgroupdevop:latest
+            script: |
+              # Check and create new file .env
+              if [ -f .env ]; then
+                echo ".env existed";
+                rm .env || true;
+                echo ".env has been removed";
+                touch .env;
+              else
+                touch .env;
+              fi
+              # Setup file .env
+              echo "PORT=${{ secrets.PORT }}" >> .env
+              echo "LOCAL_HOST=${{ secrets.LOCAL_HOST }}" >> .env
+              echo "USER=${{ secrets.USER }}" >> .env
+              echo "PASSWORD=${{ secrets.PASSWORD }}" >> .env
+              echo "DATABASE=${{ secrets.DATABASE }}" >> .env
+              echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
+              echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
+              echo "SMTP_HOST=${{ secrets.SMTP_HOST }}" >> .env
+              echo "SMTP_PORT=${{ secrets.SMTP_PORT }}" >> .env
+              echo "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" >> .env
+              echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> .env
+              # Pull Docker image and Run
+              docker pull ${{ secrets.DOCKER_USERNAME }}/sgroupdevop:latest
+              docker rm -f myapp-container || true
+              docker run -d --name myapp-container --network cunity-network \
+              --env-file .env \
+              -p ${{ secrets.PORT }}:${{ secrets.PORT }} \
+              ${{ secrets.DOCKER_USERNAME }}/sgroupdevop:latest
             
 
 
