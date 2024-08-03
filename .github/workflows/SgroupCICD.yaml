@@ -42,15 +42,8 @@ jobs:
             host: ${{ secrets.EC2_HOST }}
             username: ${{ secrets.EC2_USERNAME }}
             key: ${{ secrets.EC2_SSH_KEY }}
-  job_3: 
-      needs: [ job_1, job_2 ]
-      name: Deploy
-      # Xác định Environment Dev chạy job
-      runs-on: ubuntu-latest
-      # Các task nhỏ / step thực thi job
-      steps: 
-        - name: Check and create new file .env
           script: |
+          # Check and create new file .env
             if [ -f .env ]; then
               echo ".env existed";
               rm .env || true;
@@ -60,8 +53,7 @@ jobs:
               touch .env;
             fi
 
-        - name: Setup file .env
-          script: |
+        # Setup file .env
             echo "PORT=${{ secrets.PORT }}" >> .env
             echo "LOCAL_HOST=${{ secrets.LOCAL_HOST }}" >> .env
             echo "USER=${{ secrets.USER }}" >> .env
@@ -74,8 +66,7 @@ jobs:
             echo "SMTP_USERNAME=${{ secrets.SMTP_USERNAME }}" >> .env
             echo "SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }}" >> .env
 
-        - name: Pull Docker image and Run
-          script: |
+        # Pull Docker image and Run
             docker pull ${{ secrets.DOCKER_USERNAME }}/sgroupdevop:latest
             docker rm -f myapp-container || true
             docker run -d --name myapp-container --network cunity-network \
