@@ -25,7 +25,7 @@ app.use("/api/auth", AuthSuserRoute );
 app.use("/api", ApiVoteRoute );
 
 app.get('/api/HelloWorld', (req, res) => {
-    res.send("Hello World")
+    res.send("World")
 })
 
 
