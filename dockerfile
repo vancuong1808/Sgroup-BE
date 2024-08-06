@@ -1,10 +1,12 @@
 FROM node:22.1.0
 
-WORKDIR /app
+WORKDIR /sgroudevop
 
-COPY package*.json ./
+COPY package.json ./
 
-COPY . .
+COPY package-lock.json ./
+
+COPY . /sgroudevop
 
 RUN npm install 
 
