@@ -1,12 +1,12 @@
 FROM node:22.1.0
 
-WORKDIR /sgroupdevop
+COPY package.json /sgroupdevops
 
-COPY package.json /sgroupdevop
+COPY package-lock.json /sgroupdevops
 
-COPY package-lock.json /sgroupdevop
+WORKDIR /sgroupdevops
 
-COPY . /sgroupdevop
+COPY . /sgroupdevops
 
 RUN npm install 
 
