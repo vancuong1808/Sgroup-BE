@@ -24,6 +24,10 @@ app.use("/api/user", SuserRoute );
 app.use("/api/auth", AuthSuserRoute );
 app.use("/api", ApiVoteRoute );
 
+app.get('/api/HelloWorld', (req, res) => {
+    res.send("World")
+})
+
 
 app.listen( process.env.PORT || 3000 , function( req, res ) {
     console.log('Example app listening on port 3000!');
