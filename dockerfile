@@ -1,8 +1,8 @@
 FROM node:22.1.0
 
-COPY package.json /sgroupdevops
+COPY package.json .
 
-COPY package-lock.json /sgroupdevops
+COPY package-lock.json .
 
 WORKDIR /sgroupdevops
 
