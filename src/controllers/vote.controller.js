@@ -1,122 +1,168 @@
 import VoteService from '../services/vote.service.js';
-import AuthUtils from '../Utils/auth.utils.js';
+import { GetCurrentDate } from '../Utils/date.utils.js';
+import responseHandler from '../handlers/response.handler.js';
 
-const CreatePolls = async( req, res ) => {
+const CreatePolls = async( req, res, next ) => {
     try {
-        const now = AuthUtils.GetCurrentDate();
-        console.log( now )
-        const PollsBody = {
-            userid: parseInt( req.user.userid ),
+        const now = GetCurrentDate();
+        const pollsBody = {
+            userid: parseInt(req.user.userid),
             title: req.body.title,
             isLock: false,
             createdAt: `${now}`
+        };
+        const polls = await VoteService.CreatePolls( pollsBody);
+        if ( polls.status === 'success') {
+            return responseHandler.ok(res, polls.message, polls.data );
+        } else {
+            return responseHandler.badRequest( res, polls.message );
         }
-        const Polls = await VoteService.CreatePolls( PollsBody );
-        res.status( 200 ).json( Polls );
-    } catch (error) {
-        res.status( 400 ).json( error );
-    }
-
-}
-
-const LockPoll = async( req, res ) => {
-    try {
-        const PollID = req.params.id;
-        const User = {
-            userid: parseInt( req.user.userid )
-        }
-        const LockPoll = await VoteService.LockPoll( PollID, User.userid );
-        res.status( 200 ).json( LockPoll );
-    } catch (error) {
-        res.status( 400 ).json( error );
-    }
-}
-
-const UnLockPoll = async( req, res ) => {
-    try {
-        const PollID = req.params.id;
-        const User = {
-            userid: parseInt( req.user.userid )
-        }
-        const UnLockPoll = await VoteService.UnLockPoll( PollID, User.userid );
-        res.status( 200 ).json( UnLockPoll );
-    } catch (error) {
-        res.status( 400 ).json( error );
-    }
-}
-
-const DeletePoll = async( req, res ) => {
-    try {
-        const PollID = req.params.id;
-        const UserID = parseInt( req.user.userid );
-        const DeletePoll = await VoteService.DeletePoll( PollID, UserID );
-        res.status( 200 ).json( DeletePoll );
     } catch( error ) {
-        res.status( 400 ).json( error )
+        next( error );
+    }
+};
+
+const LockPoll = async( req, res, next ) => {
+    try {
+        const PollID = req.params.id;
+        const UserID = parseInt(req.user.userid);
+        const result = await VoteService.LockPoll(PollID, UserID);
+
+        if ( result.status === 'success' ) {
+            return responseHandler.ok( res, result.message, result.data );
+        } else {
+            return responseHandler.badRequest( res, result.message );
+        }
+    } catch( error ) {
+        next( error )
+    }
+};
+
+
+const UnLockPoll = async( req, res, next ) => {
+    try {
+        const PollID = req.params.id;
+        const UserID = parseInt(req.user.userid);
+        const result = await VoteService.UnLockPoll(PollID, UserID);
+
+        if ( result.status === 'success' ) {
+            return responseHandler.ok( res, result.message, result.data );
+        } else {
+            return responseHandler.badRequest( res, result.message);
+        }
+    } catch( error ) {
+        next( error )
+    }
+};
+
+
+const DeletePoll = async( req, res, next ) => {
+    try {
+        const pollId = req.params.id;
+        const userId = parseInt(req.user.userid);
+        const result = await VoteService.DeletePoll(pollId, userId);
+
+        if ( result.status === "success" ) {
+            return responseHandler.ok( res, result.message, {} );
+        } else {
+            return responseHandler.badRequest( res, result.message );
+        }
+    } catch( error ) {
+        next( error );
     }
 }
 
-
-const AddOption = async( req, res ) => {
+const AddOption = async( req, res, next ) => {
     try {
-        const now = AuthUtils.GetCurrentDate();
-        const OptionBody = {
+        const now = GetCurrentDate();
+        const optionBody = {
             pollid: req.body.pollid,
             option: req.body.option,
             createdAt: now
+        };
+        
+        const result = await VoteService.AddOption(optionBody);
+
+        if ( result.status === "success" ) {
+            return responseHandler.ok( res, result.message, result.data );
+        } else {
+            return responseHandler.badRequest( res, result.message );
         }
-        const Option = await VoteService.AddOption( OptionBody );
-        res.status( 200 ).json( Option );
     } catch (error) {
-        res.status( 400 ).json( error );
+        next( error );
     }
 }
 
-const RemoveOption = async( req, res ) => {
+const RemoveOption = async( req, res, next ) => {
     try {
-        const OptionID = req.params.id;
-        const RemoveOption = await VoteService.RemoveOption( OptionID );
-        res.status( 200 ).json( RemoveOption );
-    } catch (error) {
-        res.status( 400 ).json( error );
-    }
-}
+        const optionId = req.params.id;
+        const result = await VoteService.RemoveOption( optionId );
 
-const Vote = async( req, res ) => {
-    try {
-        const VoteBody = {
-            userid: parseInt( req.user.userid ),
-            optionid : req.body.optionid
+        if (result.status === "success") {
+            return responseHandler.ok( res, result.message, {} );
+        } else {
+            return responseHandler.badRequest( res, result.message );
         }
-        const Vote = await VoteService.Vote( VoteBody );
-        res.status( 200 ).json( Vote );
     } catch( error ) {
-        res.status( 400 ).json( error );
+        next( error );
     }
-}
+};
 
-const UnVote = async( req, res ) => {
+const Vote = async( req, res, next ) => {
     try {
-        const UnVoteBody = {
-            userid: parseInt( req.user.userid ),
-            optionid : req.body.optionid
+        const voteBody = {
+            userid: parseInt(req.user.userid),
+            optionid: req.params.id
+        };
+        
+        const result = await VoteService.Vote(voteBody);
+
+        if (result.status === "success") {
+            return responseHandler.ok(res, result.message);
+        } else {
+            return responseHandler.badRequest(res, result.message);
         }
-        const UnVote = await VoteService.UnVote( UnVoteBody );
-        res.status( 200 ).json( UnVote );
     } catch( error ) {
-        res.status( 400 ).json( error );
+        next( error );
     }
-}
+};
 
-const GetUsersVoted = async( req, res ) => {
+
+const UnVote = async( req, res, next ) => {
     try {
-        const PollsID = req.params.id;
-        const UsersVoted = await VoteService.GetUsersVoted( PollsID );
-        res.status( 200 ).json( UsersVoted );
-    } catch (error) {
-        res.status( 400 ).json( error );
+        const unVoteBody = {
+            userid: parseInt(req.user.userid),
+            optionid: req.params.id
+        };
+
+        const result = await VoteService.UnVote(unVoteBody);
+
+        if (result.status === "success") {
+            return responseHandler.ok( res, result.message );
+        } else {
+            return responseHandler.badRequest( res, result.message );
+        }
+    } catch( error ) {
+        next( error )
     }
-}
+};
+
+
+const GetUsersVoted = async( req, res, next ) => {
+    try {
+        const pollsID = req.params.id;
+        const result = await VoteService.GetUsersVoted(pollsID);
+
+        if (result.status === "success") {
+            return responseHandler.ok( res, result.message, result.data );
+        } else {
+            return responseHandler.badRequest(res, result.message );
+        }
+    } catch( error ) {
+        next( error )
+    }
+};
+
 
 export default {
     CreatePolls,

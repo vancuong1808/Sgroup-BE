@@ -1,6 +1,6 @@
-import express from 'express'
-import VoteApiController from '../controllers/vote.controller.js'
-import AuthMiddleware from '../middleware/auth.middleware.js';
+import express from 'express';
+import VoteApiController from '../../controllers/vote.controller.js';
+import AuthMiddleware from '../../middleware/auth.middleware.js';
 
 const router = express.Router();
 
@@ -17,9 +17,9 @@ router.post('/add-vote', VoteApiController.AddOption );
 
 router.delete('/remove-vote/:id', VoteApiController.RemoveOption ); 
 
-router.put('/vote', AuthMiddleware.ValidateToken, VoteApiController.Vote );
+router.put('/vote/:id', AuthMiddleware.ValidateToken, VoteApiController.Vote );
 
-router.put('/unvote', AuthMiddleware.ValidateToken, VoteApiController.UnVote );
+router.put('/unvote/:id', AuthMiddleware.ValidateToken, VoteApiController.UnVote );
 
 router.get('/get-users-voted/:id', VoteApiController.GetUsersVoted );
 

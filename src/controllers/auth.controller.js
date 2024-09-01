@@ -1,8 +1,8 @@
-import AuthService from '../services/auth.service.js'
-import SuserService from '../services/user.service.js'
-import Utils from '../Utils/auth.utils.js'
+import authService from '../services/auth.service.js'
+import userService from '../services/user.service.js'
+import responseHandler from '../handlers/response.handler.js'
 
-const RegisterUser = async( req, res ) => {
+const RegisterUser = async( req, res, next ) => {
     try {
         const registerBody = {
             email : req.body.email,
@@ -10,95 +10,124 @@ const RegisterUser = async( req, res ) => {
             username: req.body.username,
             password : req.body.password,
         } 
-        console.log( registerBody)
-        const registerUser = await AuthService.RegisterUser( registerBody );
-        res.status(200).json( registerUser );
-    } catch (error) {
-        res.status(500).json("controllers error")
+        const registerUser = await authService.RegisterUser( registerBody );
+        if ( !registerUser || registerUser?.affectedRows === 0 ) {
+            return responseHandler.badRequest( res, "Register failed" );
+        }
+        return responseHandler.created( res, "Register successful", registerUser );
+    } catch( error ) {
+        next( error );
     }
 }
 
-const LoginUser = async( req, res ) => {
+const LoginUser = async( req, res, next ) => {
     try {
         const loginBody = {
             username : req.body.username,
             password : req.body.password 
         }
-        const LoginUser = await AuthService.LoginUser( loginBody );
-        res.status(200).json( LoginUser );
-    } catch (error) {
-        res.status( 400 ).json( error );
-    }
-}
-
-const LoginADMIN = async( req, res ) => {
-    const ADMIN = {
-        username: req.body.username,
-        password: req.body.password,
-    }
-    const token = await AuthService.LoginADMIN( ADMIN );
-    console.log( ADMINACCOUNT );
-    if( token ){
-        res.send( token );
-    }
-    console.log( token );
-    
-}
-
-const GetAllUsers = async( req, res ) => {
-    try {
-        const AllSusers = await SuserService.getAllSusers();
-        res.status(200).json( AllSusers );
-    }
-    catch( error ) {
-        res.status( 400 ).json( error );
-    }
-
-}
-
-const ForgotPassword = async( req, res ) => {
-    try {
-        const Email = {
-            email: req.body.email
-        };
-        const IsExistEmail = await SuserService.CheckMailUser( Email.email );
-        if( !IsExistEmail ) {
-            res.status( 400 ).json( { message: "EMAIL NOT EXIST" } );
+        const LoginUser = await authService.LoginUser( loginBody );
+        if ( LoginUser.status === "success" ) {
+            return responseHandler.ok( res, LoginUser.message, LoginUser.data );
         }
-        const OTP = await AuthService.SendMail( Email.email );
-        res.status( 200 ).json( OTP );
-    }
-    catch( error ) {
-        res.status( 400 ).json( error );
+    } catch( error ) {
+        if ( error.message === "User not found" || error.message === "Wrong password" ) {
+            return responseHandler.unauthenticate( res, error.message );
+        }
+        next( error );
     }
 }
 
-const ResetPassword = async( req, res ) => {
+const GetAllUsers = async( req, res, next ) => {
+    try {
+        const allUsers = await userService.GetAllUsers();
+        if ( allUsers.length === 0 ) {
+            return responseHandler.notFound( res, "No users found" );
+        }
+        return responseHandler.ok( res, "Get all users successful", allUsers );
+    }
+    catch( error ) {
+        next( error );
+    }
+
+}
+
+const ForgotPassword = async(req, res, next) => {
+    try {
+        const Email = req.body.email;
+        const isExistEmail = await userService.CheckMailUser(Email);
+        if (!isExistEmail) {
+            return responseHandler.badRequest(res, "EMAIL NOT EXIST");
+        }
+        const result = await authService.SendMail(Email);
+        if( !result || result?.affectedRows === 0 ) {
+            return responseHandler.badRequest(res, "EMAIL NOT EXIST");
+        }
+        return responseHandler.ok( res, "Email has been send", result );
+    } catch( error ) {
+        next( error );
+    }
+}
+
+const ResetPassword = async( req, res, next ) => {
     try {
         const NewPassword = {
             email: req.body.email,
             newpassword: req.body.newpassword,
             otp: req.body.otp
         };
-        const SetNewPassword = await AuthService.SetNewPassword( NewPassword );
-        res.status( 200 ).json( SetNewPassword );
-    } catch (error) {
-        res.status( 400 ).json( error )
+        const IsOTPValid = await userService.checkOTP( NewPassword );
+        if ( IsOTPValid.status === "expired" ) {
+            return responseHandler.unauthenticate( res, "OTP EXPIRED" );
+        }
+        if ( IsOTPValid.status === "not expired" ) {
+            const SetNewPassword = await authService.SetNewPassword( NewPassword );
+            if ( !SetNewPassword || SetNewPassword?.affectedRows === 0 ) {
+                return responseHandler.badRequest( res, "Reset password failed" );
+            }
+            return responseHandler.ok( res, "Reset password successful", SetNewPassword );
+        } 
+    } catch( error ) {
+        if ( error.message === "EMAIL NOT EXIST" ) {
+            return responseHandler.unauthenticate( res, "EMAIL NOT EXIST" );
+        }
+        next( error );
     }
 }
 
-const UploadSingle = ( req, res ) => {
-    AuthService.UploadSingle( req, res )
+const UploadSingle = ( req, res, next ) => {
+    try {
+        const file = req.file;
+        if( !file ) {
+            return responseHandler.badRequest( res, "File not found" );
+        }
+        const uploadSingle =  authService.UploadSingle( file );
+        if ( uploadSingle.status === 'success' ) {
+            return responseHandler.ok( res, "Upload file successful", uploadSingle.data );
+        }
+    } catch( error ) {
+        next( error );
+    }
 }
 
-const UploadMulti = ( req, res ) => {
-    AuthService.UploadMulti( req, res )
+const UploadMulti = ( req, res, next ) => {
+    try {
+        const files = req.files;
+        if( !files ) {
+            return responseHandler.badRequest( res, "File not found" );
+        }
+        const uploadMulti =  authService.UploadMulti( files );
+        if ( uploadMulti.status === 'success' ) {
+            return responseHandler.ok( res, "Upload files successful", uploadMulti.data );
+        }
+    } catch( error ) {
+        next( error );
+    }
 }
 
 export default { 
     RegisterUser,
     LoginUser,
-    LoginADMIN,
     GetAllUsers,
     ForgotPassword,
     ResetPassword,

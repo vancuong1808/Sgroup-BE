@@ -1,156 +1,104 @@
 import database from '../config/database.js'
-import SuserService from './user.service.js'
-import Utils from '../Utils/auth.utils.js'
+import { HashedPassword, ComparePassword } from '../Utils/auth.utils.js'
+import { RandomOTP, GetExpiredOtp } from '../Utils/otp.utils.js'
+import { Transporter } from '../config/emailConfig.js'
+import { FileConfigs } from '../config/fileConfig.js'
 import jwt from 'jsonwebtoken'
-import nodemailer from 'nodemailer'
-import multer from 'multer'
 import dotenv from 'dotenv'
 dotenv.config()
 
 const RegisterUser = async( registerBody ) => {
     try {
-        const hashedPassword = await Utils.HashedPassword( registerBody.password );
+        const hashedPassword = await HashedPassword( registerBody.password );
         const User = await database.query( 'INSERT INTO users( email, fullName, username, password ) VALUES ( ?,?, ?, ? )', [ registerBody.email, registerBody.fullName ,registerBody.username, hashedPassword ] );   
-        if( User[0].length === 0 ) {
-            console.log( User );
-            return { message : "REGISTER FAIL" };
-        }
-        return User[0].insertId;
+        return User[0];
     } 
     catch( error ) {
-        console.log(error)
-        return { message : "ERROR REGISTER" };
+        throw error;
     }
 }
 
 const LoginUser = async( loginBody ) => {
     try {
-        const hash = await database.query( 'SELECT id, password FROM users WHERE username = ?', [loginBody.username] );
-        console.log( hash[0][0] );
-        if( hash[0].length === 0 ) {
-            console.log( hash[0][0].password );
-            return { message : "ERROR HASHING" };
+        const result = await database.query( 'SELECT id, password FROM users WHERE username = ?', [ loginBody.username ] );
+        if( result[0].length === 0 ) {
+            throw new Error("User not found")
         }
-        const CheckedPassword = await Utils.ComparePassword( loginBody.password, hash[0][0].password );
-        console.log( CheckedPassword )
-        if ( CheckedPassword ) {
-            const token = jwt.sign( { userid: `${hash[0][0].id}` }, process.env.SECRET_KEY );
-            return { message : "LOGIN SUCCESS", token };
+        const checkedPassword = await ComparePassword( loginBody.password, result[0][0].password );
+        if ( !checkedPassword ) {
+            throw new Error("Wrong password")
         }
-        else {
-            return { message : "LOGIN FAIL" };
-        }
-    } catch (error) {
-        console.log( error )
-        return { message : "ERROR LOGIN" };
+        const token = jwt.sign( { userid: `${result[0][0].id}` }, process.env.SECRET_KEY );
+        return { status: 'success', message: "Login successful", data: { token } };
+    } catch( error ) {
+        throw error;
     }
 }
 
-const LoginADMIN = async( ADMIN ) => {
-    if ( ADMIN.username != "ADMIN" && ADMIN.password != "ADMIN" ) {
-        res.status( 401 ).json( "WRONG ADMIN" );
-        return { message: "WRONG ADMIN" };
-    }
-    const token = jwt.sign( { username: "ADMIN", userid: 0 }, process.env.SECRET_KEY );
-    return token;
-}
+const SendMail = async(Email) => {
+    try {
+        const otp = RandomOTP();
 
-const SendMail = async( Email ) => {
-    try {
-        const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST,
-            port: process.env.SMTP_PORT,
-            auth: {
-                user: process.env.SMTP_USERNAME,
-                pass: process.env.SMTP_PASSWORD
-            }
-        });
-    const otp = Utils.RandomOTP();
-    try {
-        await transporter.sendMail({
+        await Transporter.sendMail({
             from: process.env.SMTP_USERNAME,
             to: Email,
             subject: 'OTP',
             text: `Your OTP: ${otp}`
         });
 
-    const time = new Date();
-    const expireTime = time.setMinutes( time.getMinutes() + 5 )
-    console.log( expireTime )
-    const setOTP = {
-        email: Email,
-        otp: otp,
-        expireTime: expireTime.toString()
-    }
-    const saveOTP = await SuserService.saveUserOTP( setOTP );
-    console.log( saveOTP )
-    return { message: "GET OTP SUCCESS " }
+        const setOTP = {
+            email: Email,
+            otp: otp,
+            expireTime: GetExpiredOtp().toString()
+        };
 
-    } catch (error) {
-        console.log( error )
-        return { message: "GET OTP FAIL "}
-    }
-    
-    } catch (error) {
-        console.log( error )
-        return { message : "ERROR SEND MAIL" };
-    }
+        const isExistEmail = await database.query(`SELECT * FROM users WHERE email = ?`, [setOTP.email]);
 
+        if (isExistEmail[0].length === 0) {
+            const setNewOtp = await database.query(`INSERT INTO users (otp, expire) VALUES ( ?, ?)`, [setOTP.email, setOTP.otp, setOTP.expireTime]);
+            return setNewOtp[0];
+        } else {
+            const updateToOldOtp = await database.query(`UPDATE users SET otp = ?, expire = ? WHERE email = ?`, [setOTP.otp, setOTP.expireTime, setOTP.email]);
+            return updateToOldOtp[0];
+
+        }
+    } catch (error) {
+        throw error;
+    }
 }
 
 const SetNewPassword = async( NewPassword ) => {
     try {
-        const IsExistEmailOTP = await SuserService.CheckMailOTP( NewPassword.email );
-        if( !IsExistEmailOTP ) {
-            return { message: "EMAIL NOT EXIST" };
-        }
-        const IsOTPValid = await SuserService.CheckOTP( NewPassword );
-        if ( !IsOTPValid ) {
-            return { message : "OTP INVALID OR EXPIRED" };
-        }
-        const hashedPassword = await Utils.HashedPassword( NewPassword.newpassword );
-        const User = database.query(`UPDATE users SET password = ? WHERE email = ?`, [ hashedPassword, NewPassword.email ]);
-        if( User[0].length === 0 ) {
-            console.log( User );
-            return { message : "SET NEW PASSWORD FAIL" };
-        }
-        return { message : "SET NEW PASSWORD SUCCESS" };
+        const hashedPassword = await HashedPassword( NewPassword.newpassword );
+        const user = database.query(`UPDATE users SET password = ? WHERE email = ?`, [ hashedPassword, NewPassword.email ]);
+        return user[0];
     } catch (error) {
-        return { message : "ERROR NEW PASSWORD", error };
+        throw error;
     }
 }
 
-const UploadSingle = ( req, res ) => {
-    const upload = multer({ storage: Utils.FileConfigs().storage, fileFilter: Utils.FileConfigs().fileFilter }).single('file')
-    upload( req, res, (error) => {
+const UploadSingle = ( file ) => {
+    const upload = multer({ storage: FileConfigs().storage, fileFilter: FileConfigs().fileFilter }).single('file')
+    upload( (error) => {
         if( error ) {
-            return res.status( 400 ).json( error );
+            throw error;
         }
-        const file = req.file;
-        if( !file ) {
-            return res.status( 400 ).send( "NO FILE" );
-        }
-        return res.status( 200 ).send("Upload successful")
+        return { status: 'success', message: "Upload successful", data: file }
     })
 }
 
-const UploadMulti = ( req, res ) => {
-    const upload = multer({ storage: Utils.FileConfigs().storage, fileFilter: Utils.FileConfigs().fileFilter } ).array('file', 10)
-    upload( req, res, (error) => {
+const UploadMulti = ( files ) => {
+    const upload = multer({ storage: FileConfigs().storage, fileFilter: FileConfigs().fileFilter } ).array('file', 10)
+    upload( ( error ) => {
         if( error ) {
-            return res.status( 400 ).json( error );
+            throw error;
         }
-        const files = req.files;
-        if( !files ) {
-            return res.status( 400 ).send( "NO FILE" );
-        }
-        return res.status( 200 ).send("Upload successful")
+        return { status: 'success', message: "Upload successful", data: files }
     })
 }
 export default {
     RegisterUser,
     LoginUser,
-    LoginADMIN,
     SendMail,
     SetNewPassword,
     UploadSingle,
